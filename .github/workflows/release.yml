@@ -1,0 +1,121 @@
+name: 发布 Windows 版
+
+# 为什么在服务器上打包：
+# 这台开发机连 github.com 只有 20 KB/s，27 MB 的 exe 传不上去（要二十多分钟，
+# 而且中途一断就得重来）。Actions 的 runner 在 GitHub 内网里传附件，几秒钟的事。
+# 触发方式：推一个 v* 标签，或者在这里手动 Run workflow。
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要发布的标签，例如 v1.0.0（得先存在）"
+        required: true
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 环境自检
+        shell: bash
+        run: |
+          echo "runner  : $(uname -a)"
+          echo "python  : $(python -V 2>&1)"
+          echo "编码    : PYTHONUTF8=$PYTHONUTF8"
+          echo "仓库    : $GITHUB_REPOSITORY"
+          echo "触发 ref: $GITHUB_REF"
+          ls -l icon.ico campus_login.py
+
+      - name: 安装打包工具
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          # Pillow 不是必需的（缺了就退到系统 Acrylic），装上是为了出真毛玻璃
+          python -m pip install pyinstaller pillow
+
+      - name: 打包单文件 exe
+        shell: bash
+        run: |
+          python -m PyInstaller -F -w -i icon.ico --name CampusAutologin campus_login.py --noconfirm
+          ls -l dist/
+
+      - name: 算 SHA256
+        shell: bash
+        run: |
+          python - <<'PY'
+          import hashlib, pathlib
+          p = pathlib.Path("dist/CampusAutologin.exe")
+          h = hashlib.sha256(p.read_bytes()).hexdigest()
+          pathlib.Path("dist/CampusAutologin.exe.sha256").write_text(
+              h + "  CampusAutologin.exe\n", encoding="utf-8")
+          print("size   : %.2f MB" % (p.stat().st_size / 1048576))
+          print("sha256 :", h)
+          PY
+
+      - name: 发布 Release 并上传附件
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          set -e
+          echo "tag  = $TAG"
+          echo "repo = $GITHUB_REPOSITORY"
+
+          # 同 tag 的草稿优先复用 —— 网页上写好的说明不会丢
+          RID=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+                  --jq ".[] | select(.tag_name==\"$TAG\" and .draft) | .id" | head -1)
+
+          if [ -n "$RID" ]; then
+            echo "复用草稿 id=$RID（保留原有说明），先转成正式发布"
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/releases/$RID" -F draft=false > /dev/null
+          else
+            echo "没有草稿，新建一个"
+            gh release create "$TAG" \
+              --title "校园网一键登录 $TAG" \
+              --notes-file RELEASE_NOTES.md \
+              --latest
+          fi
+
+          # 传附件：exe + 校验和
+          gh release upload "$TAG" \
+            "dist/CampusAutologin.exe" \
+            "dist/CampusAutologin.exe.sha256" \
+            --clobber
+
+          echo "---- 结果 ----"
+          gh release view "$TAG" --json url,isDraft,assets \
+            --jq '.url, .isDraft, (.assets[].name)' \
+            || echo "(这里只是打印结果，发布本身可能已经成功)"
+
+      - name: 填仓库简介与 Topics（可选）
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # GITHUB_TOKEN 通常没有管理仓库的权限，这两步失败是正常的，
+          # 不影响 Release。失败就手动在网页 About 里填。
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY" \
+            -f description="阜阳理工学院 Dr.COM 校园网一键认证 | 自动切 Wi-Fi、认证后真实复核出网、密码 DPAPI 加密 | Windows + Android" \
+            > /dev/null && echo "简介已写" || echo "简介没写进去（权限不够），手动填"
+          gh api -X PUT "repos/$GITHUB_REPOSITORY/topics" \
+            --input .github/topics.json > /dev/null && echo "Topics 已写" || echo "Topics 没写进去（权限不够），手动填"
