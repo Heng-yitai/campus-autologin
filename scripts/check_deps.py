@@ -16,6 +16,19 @@ import os
 import re
 import sys
 
+
+def _safe_console():
+    """非 UTF-8 控制台（GBK / cp1252）下打印 ✅ 会抛 UnicodeEncodeError，
+    让本该通过的检查显示成失败。这里只替换编不出来的字符，不改编码。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="replace")
+        except Exception:
+            pass
+
+
+_safe_console()
+
 # 参与运行时检查的文件。make_icon.py / make_logout_icon.py 是需要 Pillow
 # 的开发工具，不随程序运行，不在检查范围内。
 RUNTIME = [

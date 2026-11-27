@@ -15,6 +15,12 @@ jobs:
     # 主程序调用 DPAPI / WlanConnect / 自绘窗口，全是 Win32 API
     runs-on: windows-latest
 
+    # Windows 跑者的控制台默认不是 UTF-8，脚本里的中文和 ✅ 会直接抛
+    # UnicodeEncodeError，导致测试全过却显示 Failed。强制 UTF-8 输出。
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+
     strategy:
       fail-fast: false
       matrix:
@@ -27,6 +33,16 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: 环境自检（版本 / 编码 / 文件是否齐全）
+        shell: pwsh
+        run: |
+          python -c "import sys,locale; print('python', sys.version.split()[0]); print('stdout', sys.stdout.encoding); print('filesystem', sys.getfilesystemencoding()); print('preferred', locale.getpreferredencoding(False))"
+          foreach ($f in 'campus_login.py','net_guard.py','setup_credentials.py','flow_test.py','scripts/check_deps.py') {
+            if (-not (Test-Path $f)) { Write-Host "缺少文件：$f"; exit 1 }
+          }
+          Write-Host "文件齐全"
+
 
       - name: 确认没有引入意料之外的第三方依赖
         run: python scripts/check_deps.py

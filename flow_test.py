@@ -10,6 +10,24 @@ import os
 import sys
 import time
 
+
+def _safe_console():
+    """保证在非 UTF-8 的控制台上不会因为打印中文/符号而崩掉。
+
+    踩过的坑：GitHub Actions 的 Windows 跑者和中文版 Windows 的 GBK 控制台
+    默认不是 UTF-8，直接 print("✅ ...") 会抛 UnicodeEncodeError，
+    测试明明全过却显示失败（exit code 1）。
+    这里只把「编不出来的字符」替换成 ?，不改变编码，GBK 下中文照常显示。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="replace")
+        except Exception:
+            pass
+
+
+_safe_console()
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import campus_login as C
 
