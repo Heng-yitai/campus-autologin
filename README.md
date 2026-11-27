@@ -6,10 +6,11 @@
 
 点一下图标 —— 自动识别、自动切 Wi-Fi、自动认证、再自己核对是不是**真的**能上网
 
+[![test](https://github.com/Heng-yitai/campus-autologin/actions/workflows/test.yml/badge.svg)](https://github.com/Heng-yitai/campus-autologin/actions/workflows/test.yml)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D4?logo=windows&logoColor=white)](#)
 [![Android](https://img.shields.io/badge/Android-7.0%20~%2014-3DDC84?logo=android&logoColor=white)](#安卓版)
-[![Dependencies](https://img.shields.io/badge/依赖-纯标准库-brightgreen)](#)
+[![Dependencies](https://img.shields.io/badge/运行时依赖-零必需-blue)](#依赖说明)
 [![Tests](https://img.shields.io/badge/测试-11%2F11%20通过-success)](#测试)
 
 [功能](#它解决了什么问题) · [快速开始](#快速开始) · [工作原理](#工作原理) · [适配自己的学校](#适配自己的学校) · [故障排查](#故障排查)
@@ -47,7 +48,7 @@ Dr.COM 认证的校园网有个烦人的循环：**连上 Wi-Fi → 打开浏览
 | 密码 | 明文存在配置文件 | Windows DPAPI 加密，**换电脑也解不开** |
 | 长期断网 | 得自己发现 | 可选守护进程每 60 秒体检一次，断了自动修复 |
 | 界面 | 黑框或系统弹窗 | 自绘毛玻璃面板，DPI 感知，跟随系统深浅色 |
-| 依赖 | requests / pywin32 / Qt | **零第三方依赖**，纯标准库，单文件可跑 |
+| 依赖 | requests / pywin32 / Qt | **运行时零必需依赖**，纯标准库；Pillow 可选，只影响毛玻璃效果 |
 
 ---
 
@@ -57,8 +58,18 @@ Dr.COM 认证的校园网有个烦人的循环：**连上 Wi-Fi → 打开浏览
 
 **环境要求**：Windows 10 / 11，Python 3.8+（实测 3.13）
 
+不需要装任何第三方包就能跑。唯一可选的组件是 Pillow：
+
 ```bash
-git clone https://github.com/<你的用户名>/campus-autologin.git
+pip install pillow      # 可选
+```
+
+装了才会用「抓屏 + 高斯模糊」自己合成毛玻璃背景；**不装也能正常登录**，
+面板会自动退回 Windows 系统自带的 Acrylic 材质，再不行就纯色实底。
+日志里会记一句「自制毛玻璃失败」，那不是报错，是降级。
+
+```bash
+git clone https://github.com/Heng-yitai/campus-autologin.git
 cd campus-autologin
 ```
 
@@ -230,6 +241,25 @@ CAMPUS_SSIDS = ("你的校园网", "另一个楼的名字")
 
 ---
 
+## 依赖说明
+
+| 组件 | 是否必需 | 作用 | 缺失时 |
+|---|---|---|---|
+| Python 3.8+ | **必需** | 运行环境 | 跑不起来 |
+| Pillow | 可选 | 抓屏 + 高斯模糊，自制毛玻璃背景 | 自动退回系统 Acrylic，再退回纯色实底 |
+
+其余全部是 Python 标准库（`ctypes` / `urllib` / `json` / `socket` / `subprocess` 等）。
+
+这条承诺不是靠嘴说的：`scripts/check_deps.py` 会扫描所有运行时文件，
+CI 每次 push 都跑一遍。哪天主程序不小心 `import requests` 了，构建会直接变红，
+而不是等用户在没装包的机器上才发现。
+
+```bash
+python scripts/check_deps.py
+```
+
+---
+
 ## 安全性
 
 这一块是这个工具最在意的部分，也是代码里注释最多的地方。
@@ -300,7 +330,7 @@ python flow_test.py
 系统事件日志里是这样：
 
 ```
-id=11000  已开始无线网络关联  SSID: XXX  本地 MAC: 94:BB:..
+id=11000  已开始无线网络关联  SSID: XXX  本地 MAC: 1A:2B:..
 id=8002   无法连接   失败原因: 特定的网络不可用   RSSI: 255
 ```
 
@@ -346,7 +376,7 @@ id=8002   无法连接   失败原因: 特定的网络不可用   RSSI: 255
 诚实写在这里，省得你踩了才发现：
 
 - **只支持老版 eportal 接口**。新版 Dr.COM 的 `InterFace.do`（带 RSA 密码加密、
-  服务列表 `getServices`）没有适配。作者的学校实测是老板接口，没有环境测试新版。
+  服务列表 `getServices`）没有适配。作者的学校实测是老版接口，没有环境测试新版。
 - **只支持开放式（无密码）无线网络**。需要 WPA2-Enterprise 认证的校园网用不了。
 - **桌面版只支持 Windows**。用到大量 Win32 API（DPAPI、WlanConnect、自绘窗口），
   Linux / macOS 需要重写网络与 UI 层。
@@ -355,6 +385,8 @@ id=8002   无法连接   失败原因: 特定的网络不可用   RSSI: 255
   程序只用它识别 Wi-Fi，不读取、不上传位置信息（清单里已标注 `neverForLocation`）。
 - **守护进程是定时轮询，不是事件驱动**。断网后最多 60 秒才会被修复，
   不是瞬间恢复。
+- **不装 Pillow 就没有自制毛玻璃**。面板会退回系统 Acrylic 或纯色实底，
+  功能不受影响，只是没那么好看。
 
 ---
 
@@ -371,6 +403,9 @@ campus-autologin/
 ├── 守护-启动.cmd / 停止 / 状态
 ├── make_icon.py              生成应用图标（需要 Pillow，仅开发用）
 ├── icon.ico / icon.png       图标资源
+├── scripts/
+│   └── check_deps.py         检查运行时是否只用标准库（CI 每次都会跑）
+├── .github/workflows/        CI：Windows 上跑 11 个场景的测试
 ├── docs/
 │   ├── 使用说明.md            详细使用文档
 │   └── screenshots/          界面截图

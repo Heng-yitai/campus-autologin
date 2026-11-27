@@ -1,0 +1,48 @@
+name: test
+
+# 这个项目的核心承诺是「认证后复核实出网」「不瞎提交账号密码」，
+# 这些逻辑全都集中在 campus_login.py 里。flow_test.py 把网络函数全部打桩，
+# 所以可以在没有校园网、没有真实账号的 CI 机器上跑完整流程。
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    # 主程序调用 DPAPI / WlanConnect / 自绘窗口，全是 Win32 API
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 确认没有引入意料之外的第三方依赖
+        run: python scripts/check_deps.py
+
+      - name: 语法检查
+        run: python -m py_compile campus_login.py net_guard.py setup_credentials.py flow_test.py make_icon.py
+
+      - name: 流程测试（11 个场景，全打桩不联网）
+        run: python flow_test.py
+
+      - name: 确认测试没有污染真实日志
+        shell: pwsh
+        run: |
+          # flow_test 应该只写 _flow_test.log，绝不能污染真正的 login.log
+          if (Test-Path login.log) {
+            Write-Host "错误：测试过程写入了 login.log"
+            exit 1
+          }
+          Write-Host "OK 未污染真实日志"

@@ -24,7 +24,7 @@ export PATH="$JDK/bin:$PATH"
 APP_NAME="校园网一键登录"
 
 echo "== 1/6 清理旧产物 =="
-# 这台机器上的 rm 被安全删除策略拦着，所以用"移走"而不是"删除"
+# 旧产物移到带时间戳的目录而不是删除，方便对比两次构建的差异
 if [ -d build ]; then mv build "build_old_$(date +%s)"; fi
 mkdir -p build/gen build/classes build/dex
 
