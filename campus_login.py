@@ -1353,8 +1353,8 @@ def ensure_profile(ssid: str) -> bool:
 
     教训：任何"重建配置"的动作都可能毁掉别人的密码。已有配置一律原样保留。
 
-    （附：随机 MAC 不是连不上的原因。08:23:56 那次关联用的就是真实 MAC
-    94:BB:43:EA:42:02，照样在同一秒失败。配置里带 enableRandomization=false
+    （附：随机 MAC 不是连不上的原因。日志显示那次关联用的就是网卡真实 MAC，
+    关掉随机化之后照样在同一秒失败。配置里带 enableRandomization=false
     只是为了让校园网 MAC 稳定，方便门户按 IP/MAC 记账，别当成修复。）
     """
     if profile_exists(ssid):
