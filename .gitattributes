@@ -13,6 +13,9 @@
 *.bat   text eol=crlf
 *.vbs   text eol=crlf
 
+# 中文 .cmd 存的是 GBK，别当文本处理（会被当成二进制差异或乱码）
+打包exe.cmd binary
+
 # 二进制文件不要做任何转换
 *.png   binary
 *.ico   binary

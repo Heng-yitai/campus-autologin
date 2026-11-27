@@ -102,6 +102,12 @@ pythonw campus_login.py
 停止用 `守护-停止.cmd`，看状态用 `守护-状态.cmd`。
 
 > 想打包成单个 exe 发给不会装 Python 的同学：
+>
+> **Windows 上直接双击 `打包exe.cmd`** 就行。它会自己找 Python（跳过应用商店
+> 的占位 `python.exe`）、按需装 PyInstaller、打包、再把 exe 和使用说明压成
+> `发布/校园网一键登录-v6.zip`，全程不用敲命令。
+>
+> 想手动来也可以：
 > ```bash
 > pyinstaller -F -w -i icon.ico --name "校园网一键登录" campus_login.py
 > ```
