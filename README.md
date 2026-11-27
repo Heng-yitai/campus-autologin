@@ -4,7 +4,7 @@
 
 **Dr.COM eportal 校园网自动认证 · Windows 桌面版 + Android 版**
 
-点一下图标 —— 自动识别、自动切 Wi-Fi、自动认证、再自己核对是不是**真的**能上网
+点一下图标，它自己认网、自己切 Wi-Fi、自己认证，最后再确认一遍是不是真能上网
 
 [![test](https://github.com/Heng-yitai/campus-autologin/actions/workflows/test.yml/badge.svg)](https://github.com/Heng-yitai/campus-autologin/actions/workflows/test.yml)
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
@@ -103,15 +103,15 @@ pythonw campus_login.py
 
 > 想打包成单个 exe 发给不会装 Python 的同学：
 >
-> **Windows 上直接双击 `打包exe.cmd`** 就行。它会自己找 Python（跳过应用商店
-> 的占位 `python.exe`）、按需装 PyInstaller、打包、再把 exe 和使用说明压成
-> `发布/校园网一键登录-v6.zip`，全程不用敲命令。
+> Windows 上双击 `打包exe.cmd` 就行。它会自己找 Python（跳过应用商店那个
+> 假的 `python.exe`），没装 PyInstaller 就顺手装上，然后打出 exe，
+> 连说明书一起压成 `发布/校园网一键登录-v6.zip`。
 >
-> 想手动来也可以：
+> 手动也行：
 > ```bash
 > pyinstaller -F -w -i icon.ico --name "校园网一键登录" campus_login.py
 > ```
-> 注意打包后配置文件会跟着 exe 走（放在同目录），别把它一起发出去。
+> 打完配置文件和日志都跟着 exe 走，放在同一个目录里。别把 config.dat 一起发出去。
 
 ### 安卓版
 
@@ -427,11 +427,11 @@ campus-autologin/
 
 ## 参与贡献
 
-欢迎提 Issue 或 PR。特别欢迎这几类：
+欢迎提 Issue 或 PR。下面这几类最有用：
 
-- **你的学校也能用** —— 说说门户地址和 SSID，我可以把配置示例补进文档
-- **适配了新版 `InterFace.do` 接口** —— 这个缺口最需要补
-- **macOS / Linux 移植** —— 网络层和 UI 层都需要重写，工程量大但价值高
+- 你学校也能用。把门户地址和 SSID 说一下，我把配置示例补进文档
+- 适配了新版 `InterFace.do` 接口。这块缺口最大，谁补上都行
+- macOS / Linux 移植。网络层和 UI 层都得重写，工作量不小
 
 提交前请跑一遍 `python flow_test.py`，确保 11 个场景都还是绿的。
 
