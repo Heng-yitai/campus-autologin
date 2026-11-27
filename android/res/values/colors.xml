@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 浅色模式（默认）。深色模式见 values-night/colors.xml -->
+<resources>
+    <color name="accent">#1C6FE0</color>
+    <color name="ok">#0E9F5B</color>
+    <color name="err">#D93A3A</color>
+
+    <color name="text_title">#121721</color>
+    <color name="text_body">#49505C</color>
+    <color name="text_meta">#79828F</color>
+
+    <color name="card_start">#F5FFFFFF</color>
+    <color name="card_end">#F2E6ECF5</color>
+    <color name="card_stroke">#29000000</color>
+
+    <color name="input_solid">#12000000</color>
+    <color name="input_stroke">#1F000000</color>
+
+    <color name="btn_solid">#1A1C6FE0</color>
+    <color name="btn_stroke">#661C6FE0</color>
+
+    <color name="scrim">#66000000</color>
+</resources>

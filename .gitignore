@@ -1,0 +1,43 @@
+# ── 账号与运行状态：绝对不能提交 ──────────────────────────────
+config.dat                  # DPAPI 加密的账号密码
+guard_pause.dat             # 「下线」后的暂停标记
+net_guard.pid
+_flow_test_config.dat       # 测试用临时配置
+
+# ── 日志：含出口 IP、时间、服务器原话 ─────────────────────────
+*.log
+login.log
+net_guard.log
+_flow_test.log
+_switch_test.log
+_login_stat.txt
+
+# ── 生成 / 临时文件 ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.bak
+*.bak-*
+_wlan_tmp.xml
+_wlan_profile.xml
+_vivo_profile.xml
+_dns_rollback.*
+*.tmp
+
+# ── 安卓构建产物与签名私钥 ───────────────────────────────────
+android/build/
+android/build_old_*/
+android/keystore/           # 私钥，泄露后别人可签发冒牌更新
+android/*.apk
+android/*.idsig
+android/gen/
+
+# ── 打包产物（走 GitHub Releases，不进仓库）──────────────────
+*.zip
+*.exe
+dist/
+build/
+
+# ── 系统杂物 ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

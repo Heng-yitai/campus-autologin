@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 卡片：玻璃质感。渐变 + 1dp 描边，配合窗口模糊就是毛玻璃观感。
+     颜色随系统深/浅色自动切换（values / values-night） -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="22dp" />
+    <gradient
+        android:angle="270"
+        android:startColor="@color/card_start"
+        android:endColor="@color/card_end" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/card_stroke" />
+</shape>

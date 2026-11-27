@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 深色模式：原来的深色玻璃配色 -->
+<resources>
+    <color name="accent">#5AA9FF</color>
+    <color name="ok">#58E084</color>
+    <color name="err">#FF6E6E</color>
+
+    <color name="text_title">#F5F7FA</color>
+    <color name="text_body">#C4CBD6</color>
+    <color name="text_meta">#7E8797</color>
+
+    <color name="card_start">#EE2C323D</color>
+    <color name="card_end">#EE14171E</color>
+    <color name="card_stroke">#33FFFFFF</color>
+
+    <color name="input_solid">#1FFFFFFF</color>
+    <color name="input_stroke">#2EFFFFFF</color>
+
+    <color name="btn_solid">#335AA9FF</color>
+    <color name="btn_stroke">#805AA9FF</color>
+
+    <color name="scrim">#8C000000</color>
+</resources>
